@@ -1,0 +1,84 @@
+Estrutura de Arquivos e Componentes:
+app.component.html: Template principal.
+product-list.component.html: Componente para listar os produtos.
+product.service.ts: Serviço simulando a obtenção de produtos.
+1. product.service.ts
+typescript
+Copy code
+import { Injectable } from '@angular/core';
+import { Observable, of } from 'rxjs';
+
+export interface Product {
+  id: number;
+  name: string;
+  description: string;
+  price: number;
+  imageUrl: string;
+}
+
+@Injectable({
+  providedIn: 'root'
+})
+export class ProductService {
+  private products: Product[] = [
+    {
+      id: 1,
+      name: 'Game 1',
+      description: 'Description for Game 1',
+      price: 49.99,
+      imageUrl: 'https://example.com/game1.jpg'
+    },
+    {
+      id: 2,
+      name: 'Game 2',
+      description: 'Description for Game 2',
+      price: 29.99,
+      imageUrl: 'https://example.com/game2.jpg'
+    },
+    // Add more products as needed
+  ];
+
+  getProducts(): Observable<Product[]> {
+    return of(this.products);
+  }
+}
+2. product-list.component.ts
+typescript
+Copy code
+import { Component, OnInit } from '@angular/core';
+import { Product, ProductService } from './product.service';
+
+@Component({
+  selector: 'app-product-list',
+  templateUrl: './product-list.component.html',
+  styleUrls: ['./product-list.component.css']
+})
+export class ProductListComponent implements OnInit {
+  products: Product[] = [];
+
+  constructor(private productService: ProductService) { }
+
+  ngOnInit(): void {
+    this.productService.getProducts().subscribe(products => {
+      this.products = products;
+    });
+  }
+}
+3. product-list.component.html
+html
+Copy code
+<div *ngFor="let product of products">
+  <h3>{{ product.name }}</h3>
+  <p>{{ product.description }}</p>
+  <p>Price: ${{ product.price }}</p>
+  <img [src]="product.imageUrl" alt="{{ product.name }}" width="200">
+</div>
+4. app.component.html
+html
+Copy code
+<h1>Welcome to PlayStation Store</h1>
+<app-product-list></app-product-list>
+Como Utilizar:
+Crie os arquivos correspondentes com os nomes e conteúdos conforme os exemplos fornecidos.
+Importe os módulos e serviços necessários nos módulos principais da sua aplicação.
+Adicione o componente app-product-list em seu template principal (app.component.html) para exibir a lista de produtos.
