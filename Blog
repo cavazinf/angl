@@ -1,0 +1,149 @@
+Estrutura de Arquivos e Componentes:
+post.service.ts: Serviço simulando a obtenção de postagens.
+post-list.component.ts: Componente para exibir a lista de postagens.
+post-list.component.html: Template HTML para o componente de lista de postagens.
+post-details.component.ts: Componente para exibir detalhes de uma postagem.
+post-details.component.html: Template HTML para exibir os detalhes da postagem.
+add-post.component.ts: Componente para adicionar novas postagens.
+add-post.component.html: Template HTML para o formulário de adição de postagem.
+1. post.service.ts
+typescript
+Copy code
+import { Injectable } from '@angular/core';
+import { Observable, of } from 'rxjs';
+
+export interface Post {
+  id: number;
+  title: string;
+  content: string;
+}
+
+@Injectable({
+  providedIn: 'root'
+})
+export class PostService {
+  private posts: Post[] = [
+    {
+      id: 1,
+      title: 'First Post',
+      content: 'This is the content of the first post.'
+    },
+    {
+      id: 2,
+      title: 'Second Post',
+      content: 'This is the content of the second post.'
+    },
+    // Add more posts as needed
+  ];
+
+  getPosts(): Observable<Post[]> {
+    return of(this.posts);
+  }
+
+  getPostById(id: number): Observable<Post | undefined> {
+    return of(this.posts.find(post => post.id === id));
+  }
+
+  addPost(post: Post): void {
+    this.posts.push(post);
+  }
+}
+2. post-list.component.ts
+typescript
+Copy code
+import { Component, OnInit } from '@angular/core';
+import { Post, PostService } from './post.service';
+
+@Component({
+  selector: 'app-post-list',
+  templateUrl: './post-list.component.html',
+  styleUrls: ['./post-list.component.css']
+})
+export class PostListComponent implements OnInit {
+  posts: Post[] = [];
+
+  constructor(private postService: PostService) { }
+
+  ngOnInit(): void {
+    this.postService.getPosts().subscribe(posts => {
+      this.posts = posts;
+    });
+  }
+}
+3. post-list.component.html
+html
+Copy code
+<div *ngFor="let post of posts">
+  <h3>{{ post.title }}</h3>
+  <p>{{ post.content }}</p>
+  <a routerLink="/post/{{ post.id }}">Read more</a>
+  <hr>
+</div>
+4. post-details.component.ts
+typescript
+Copy code
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+import { Post, PostService } from './post.service';
+
+@Component({
+  selector: 'app-post-details',
+  templateUrl: './post-details.component.html',
+  styleUrls: ['./post-details.component.css']
+})
+export class PostDetailsComponent implements OnInit {
+  post: Post | undefined;
+
+  constructor(
+    private route: ActivatedRoute,
+    private postService: PostService
+  ) { }
+
+  ngOnInit(): void {
+    const id = Number(this.route.snapshot.paramMap.get('id'));
+    this.postService.getPostById(id).subscribe(post => {
+      this.post = post;
+    });
+  }
+}
+5. post-details.component.html
+html
+Copy code
+<div *ngIf="post">
+  <h2>{{ post.title }}</h2>
+  <p>{{ post.content }}</p>
+</div>
+6. add-post.component.ts
+typescript
+Copy code
+import { Component } from '@angular/core';
+import { Post, PostService } from './post.service';
+
+@Component({
+  selector: 'app-add-post',
+  templateUrl: './add-post.component.html',
+  styleUrls: ['./add-post.component.css']
+})
+export class AddPostComponent {
+  newPost: Post = {
+    id: 0,
+    title: '',
+    content: ''
+  };
+
+  constructor(private postService: PostService) { }
+
+  addPost(): void {
+    this.postService.addPost({ ...this.newPost });
+    this.newPost.title = '';
+    this.newPost.content = '';
+  }
+}
+7. add-post.component.html
+html
+Copy code
+<form (submit)="addPost()">
+  <input type="text" [(ngModel)]="newPost.title" placeholder="Title"><br>
+  <textarea [(ngModel)]="newPost.content" placeholder="Content"></textarea><br>
+  <button type="submit">Add Post</button>
+</form>
